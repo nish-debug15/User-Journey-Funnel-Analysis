@@ -1,110 +1,135 @@
-# User Journey Funnel Analysis (Portfolio Project)
+# User Journey Funnel Analysis — End-to-End Analytics + ML + Streamlit
 
-This project is designed to look like **real product analytics work**, not generic dashboarding.
-
-## 1) Problem Statement
-Users are not completing the intended journey (signup or purchase). The goal is to identify where users drop off, why they drop off, and what product changes are most likely to improve conversion.
-
----
-
-## 2) What Makes This Project Recruiter-Grade
-
-Most student projects stop at:
-- “Here are conversion rates by step.”
-
-This project goes further:
-- **Event-level funnel construction** from sequential user events.
-- **Drop-off quantification** at each stage.
-- **Segmentation analysis** (device, location, traffic source).
-- **Evidence-based recommendations** tied directly to measured leakage.
+This repository now implements a complete project flow:
+1. Generate event-level funnel data.
+2. Run funnel and segmented leakage analysis.
+3. Train baseline + advanced ML models for conversion prediction.
+4. Deploy insights and scoring in a Streamlit app.
 
 ---
 
-## 3) Dataset Requirements (Non-Negotiable)
+## Why this project stands out
 
-To avoid a “fake funnel,” your data must include:
-- `user_id` (or stable pseudo-user id)
-- `event_name` (e.g., visit, signup, add_to_cart, begin_checkout, purchase)
-- `event_timestamp`
-- Segment fields (at least one of):
-  - `device_type`
-  - `geo` (country/state/city)
-  - `traffic_source` / `utm_source`
-
-### Suggested Data Sources
-- **Google Analytics sample datasets in BigQuery** (best for event-level journey work)
-- **Olist e-commerce dataset (Kaggle)** (good for commerce funnel proxies)
-- Any public clickstream/product-analytics dataset with sequenced events
+Instead of just showing descriptive charts, this project mirrors product analytics workflows used in e-commerce/SaaS:
+- **Sequential funnel analysis** (visit → signup → cart → checkout → purchase)
+- **Segment-level diagnosis** (device, location, traffic source)
+- **Predictive modeling** for conversion risk
+- **Actionable recommendations** tied to measured leakage and predicted risk
 
 ---
 
-## 4) Funnel Definition
+## Project Structure
 
-Define one explicit funnel, e.g.:
-
-1. `visit`
-2. `signup`
-3. `add_to_cart`
-4. `purchase`
-
-### Core Metrics
-- Step conversion: users reaching step N / users reaching step N-1
-- Overall conversion: users reaching final step / users at step 1
-- Step drop-off: 1 - step conversion
-- Largest leakage point: step with max drop-off
-
----
-
-## 5) Segmentation (Where You Differentiate)
-
-Run the same funnel by:
-- Device (mobile/desktop/tablet)
-- Geography
-- Traffic source
-
-### Example of strong finding
-> Mobile users have materially higher drop-off at payment than desktop, indicating a likely mobile checkout UX issue.
-
-This is much stronger than just saying “users drop at checkout.”
+```text
+.
+├── data/
+├── models/
+├── scripts/
+│   └── generate_dataset.py
+├── src/
+│   ├── analytics/
+│   │   └── funnel.py
+│   └── ml/
+│       └── train.py
+├── tests/
+├── requirements.txt
+└── streamlit_app.py
+```
 
 ---
 
-## 6) Recommendation Quality Bar
+## Setup
 
-Avoid vague suggestions like:
-- “Improve UX”
-- “Reduce steps”
-
-Instead, tie each recommendation to specific evidence:
-
-- **Observed:** Payment-step drop-off is 62% on mobile vs 38% on desktop.
-- **Hypothesis:** Mobile payment form friction (input length/autofill/latency).
-- **Action:** Simplify mobile payment fields, enable wallet/autofill, reduce validation friction.
-- **Expected impact:** Reduce mobile payment drop-off by X–Y% (tracked via A/B test).
-
-Use this four-part format for every recommendation.
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
 
 ---
 
-## 7) Suggested Deliverables
+## 1) Generate Event-Level Dataset
 
-- `notebooks/01_data_prep.ipynb`
-- `notebooks/02_funnel_analysis.ipynb`
-- `notebooks/03_segment_analysis.ipynb`
-- `sql/funnel_metrics.sql`
-- `dashboard/` screenshots (funnel + segmented leakage)
-- `insights.md` with quantified recommendations
+```bash
+python scripts/generate_dataset.py --n-users 10000 --seed 42
+```
+
+Outputs:
+- `data/events.csv`: user-level event stream
+- `data/train.csv`: modeling table (one row per user)
+
+Generated fields include:
+- IDs and sequence: `user_id`, `event_name`, `event_timestamp`
+- Segments: `device_type`, `location`, `traffic_source`
+- Behavioral/numeric features: `cart_value`, `discount_pct`, `page_load_seconds`
+- Label: `is_purchase`
 
 ---
 
-## 8) Interview-Ready Narrative
+## 2) Train ML Models (Baseline + Advanced)
 
-Use this structure when presenting:
-1. Business problem and KPI impact
-2. Funnel design and data model
-3. Biggest leakage stage
-4. Segment-level diagnosis
-5. Prioritized recommendations with measurable expected impact
-6. How you would validate via experiment
+```bash
+python -m src.ml.train --data-path data/train.csv --model-dir models
+```
 
-If you can defend each recommendation with numbers, the project reads like real analyst work done at a product company.
+Training includes:
+- **Baseline:** Logistic Regression
+- **Advanced:** Stacked Ensemble (RandomForest + HistGradientBoosting + Logistic meta-learner)
+
+Saved artifacts:
+- `models/best_model.joblib`
+- `models/metrics.json`
+
+Metrics tracked:
+- ROC-AUC
+- PR-AUC
+- F1
+
+---
+
+## 3) Run Streamlit Dashboard
+
+```bash
+streamlit run streamlit_app.py
+```
+
+Dashboard modules:
+- Overall funnel with step conversion and drop-off
+- Segment-wise leakage comparison
+- Largest leakage stage detection
+- Interactive conversion scoring with recommendation bands
+
+---
+
+## Advanced ML concepts implemented
+
+- Mixed-feature preprocessing with `ColumnTransformer`
+- Category encoding + numeric scaling pipeline
+- Model comparison (baseline vs advanced)
+- Stacked ensemble for non-linear interactions
+- Artifact persistence (`joblib`) + metrics tracking (`json`)
+
+---
+
+## Recommendation framework (non-fluffy)
+
+Each recommendation should follow:
+1. **Observed metric** (exact numbers)
+2. **Hypothesis** (what causes friction)
+3. **Action** (specific product/UX experiment)
+4. **Expected impact + validation** (A/B test KPI)
+
+Example:
+- Observed: Mobile checkout drop-off = 61%, desktop = 37%
+- Hypothesis: Mobile payment form friction and slower page load
+- Action: Reduce form fields + enable wallet autofill
+- Impact target: -12% relative drop in mobile checkout abandonment
+
+---
+
+## Next iterations
+
+- Replace synthetic dataset with GA4/BigQuery or Olist event logs
+- Add model explainability (SHAP)
+- Add experiment simulation and uplift tracking
+- Deploy Streamlit to Streamlit Community Cloud or container platform
