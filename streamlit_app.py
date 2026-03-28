@@ -12,7 +12,7 @@ from src.analytics.funnel import calculate_funnel, calculate_segmented_funnel
 
 st.set_page_config(page_title="User Journey Funnel + ML", page_icon="📉", layout="wide")
 
-st.title("📉 User Journey Funnel Analysis + Conversion Modeling")
+st.title("User Journey Funnel Analysis + Conversion Modeling")
 st.caption("End-to-end analytics project: funnel diagnostics, segmentation, and advanced ML scoring.")
 
 DATA_EVENTS = Path("data/events.csv")

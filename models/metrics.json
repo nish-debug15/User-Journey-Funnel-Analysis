@@ -1,0 +1,29 @@
+{
+  "features": [
+    "device_type",
+    "traffic_source",
+    "location",
+    "cart_value",
+    "discount_pct",
+    "page_load_seconds"
+  ],
+  "target": "is_purchase",
+  "best_model": "stacked_ensemble",
+  "baseline_metrics": {
+    "roc_auc": 0.5843627886139066,
+    "pr_auc": 0.13844005032658238,
+    "f1": 0.20821917808219179
+  },
+  "advanced_metrics": {
+    "roc_auc": 0.5851703129709983,
+    "pr_auc": 0.14551446980877783,
+    "f1": 0.0
+  },
+  "best_metrics": {
+    "roc_auc": 0.5851703129709983,
+    "pr_auc": 0.14551446980877783,
+    "f1": 0.0
+  },
+  "train_size": 8000,
+  "test_size": 2000
+}
